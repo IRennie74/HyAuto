@@ -9,7 +9,7 @@
   "updateUrl": "",
   "authorList": ["Rennie44"],
   "credits": "My mom",
-  "logoFile": "",
+  "logoFile": "assets/logo.png",
   "screenshots": [],
   "dependencies": []
 }

@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "hyauto",
+  "name": "HyAuto",
+  "description": "Mod that automatically maxes out hypixel skyblock accounts through macros",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["ExampleDude", "dxxxxy"],
-  "credits": "The Forge and FML guys, for making this example. dxxxxy for fixing it.",
+  "authorList": ["Rennie44"],
+  "credits": "My mom",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

@@ -4,6 +4,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import studio.dreamys.config.ConfigManager;
 import studio.dreamys.event.TickHandler;
 import studio.dreamys.macro.AnotherExampleMacro;
 import studio.dreamys.macro.ExampleMacro;
@@ -25,6 +26,9 @@ public class HyAutoMod {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         System.out.println("[HyAuto] PreInit event triggered.");
+
+        // Load config
+        ConfigManager.preInit(event.getModConfigurationDirectory());
     }
 
     /**

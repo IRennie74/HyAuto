@@ -1,16 +1,16 @@
 [
-{
-  "modid": "hyauto",
-  "name": "HyAuto",
-  "description": "Mod that automatically maxes out hypixel skyblock accounts through macros",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["Rennie44"],
-  "credits": "My mom",
-  "logoFile": "assets/logo.png",
-  "screenshots": [],
-  "dependencies": []
-}
+  {
+    "modid": "hyauto",
+    "name": "HyAuto",
+    "description": "Fully autonomous Hypixel Skyblock macro automation system designed to maximize account progression efficiently and safely.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://example.com",
+    "updateUrl": "",
+    "authorList": ["Rennie44"],
+    "credits": "Big thanks to my mom for the support!",
+    "logoFile": "assets/hyauto/logo.png",
+    "screenshots": [],
+    "dependencies": []
+  }
 ]

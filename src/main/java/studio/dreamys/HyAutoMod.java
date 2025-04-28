@@ -4,6 +4,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import studio.dreamys.event.TickHandler;
+import studio.dreamys.macro.AnotherExampleMacro;
+import studio.dreamys.macro.ExampleMacro;
+import studio.dreamys.macro.MacroManager;
 
 @Mod(modid = HyAutoMod.MODID, name = HyAutoMod.NAME, version = HyAutoMod.VERSION)
 public class HyAutoMod {
@@ -21,11 +25,6 @@ public class HyAutoMod {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         System.out.println("[HyAuto] PreInit event triggered.");
-
-        // Here you will:
-        // - Load config files
-        // - Set up basic settings
-        // - Prepare GUI if needed
     }
 
     /**
@@ -35,10 +34,12 @@ public class HyAutoMod {
     public void init(FMLInitializationEvent event) {
         System.out.println("[HyAuto] Init event triggered.");
 
-        // Here you will:
-        // - Register keybinds
-        // - Start local web server (if needed later)
-        // - Initialize Macro Manager
+        // Register macros
+        MacroManager.registerMacro(new ExampleMacro());
+        MacroManager.registerMacro(new AnotherExampleMacro());
+
+        // Hook into tick event
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new TickHandler());
     }
 
     /**
@@ -47,9 +48,5 @@ public class HyAutoMod {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         System.out.println("[HyAuto] PostInit event triggered.");
-
-        // Here you will:
-        // - Finalize things
-        // - Check if everything is ready
     }
 }

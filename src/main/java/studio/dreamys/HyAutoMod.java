@@ -6,9 +6,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import studio.dreamys.config.ConfigManager;
 import studio.dreamys.event.TickHandler;
-import studio.dreamys.macro.AnotherExampleMacro;
-import studio.dreamys.macro.ExampleMacro;
-import studio.dreamys.macro.MacroManager;
+import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = HyAutoMod.MODID, name = HyAutoMod.NAME, version = HyAutoMod.VERSION)
 public class HyAutoMod {
@@ -20,9 +18,6 @@ public class HyAutoMod {
     @Mod.Instance
     public static HyAutoMod instance;
 
-    /**
-     * Called first, before Minecraft is fully loaded
-     */
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         System.out.println("[HyAuto] PreInit event triggered.");
@@ -31,24 +26,17 @@ public class HyAutoMod {
         ConfigManager.preInit(event.getModConfigurationDirectory());
     }
 
-    /**
-     * Called when Minecraft is initializing
-     */
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         System.out.println("[HyAuto] Init event triggered.");
 
-        // Register macros
-        MacroManager.registerMacro(new ExampleMacro());
-        MacroManager.registerMacro(new AnotherExampleMacro());
+        // Register tick event listener
+        MinecraftForge.EVENT_BUS.register(new TickHandler());
 
-        // Hook into tick event
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new TickHandler());
+        // No need to register macros manually anymore!
+        // Macros are listed inside MacroManager.getAvailableMacros()
     }
 
-    /**
-     * Called after everything is loaded
-     */
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         System.out.println("[HyAuto] PostInit event triggered.");

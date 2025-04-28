@@ -1,32 +1,52 @@
 package studio.dreamys.macro;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MacroManager {
-    private static List<Macro> activeMacros = new ArrayList<>();  // List of active macros
+    private static Macro currentMacro;  // Only one active macro at a time
 
-    // Registers a new macro
-    public static void registerMacro(Macro macro) {
-        activeMacros.add(macro);
-    }
-
-    // Updates all active macros
+    // Called every tick
     public static void tick() {
-        for (Macro macro : activeMacros) {
-            if (!macro.isFinished()) {
-                macro.tick();  // Call tick on each macro
+        if (currentMacro != null) {
+            if (!currentMacro.isFinished()) {
+                currentMacro.tick();  // Let the macro run its logic
+            } else {
+                stopCurrentMacro(); // Auto-stop if macro reports finished
             }
         }
     }
 
-    // Optional: A method to stop a macro
-    public static void stopMacro(Macro macro) {
-        activeMacros.remove(macro);
+    // Returns all available macros (you can add more)
+    public static List<Macro> getAvailableMacros() {
+        return Arrays.asList(
+                new ExampleMacro(),
+                new AnotherExampleMacro()
+        );
     }
 
-    // Optional: A method to clear all active macros
-    public static void clearMacros() {
-        activeMacros.clear();
+    // Start a macro
+    public static void startMacro(Macro macro) {
+        stopCurrentMacro(); // Always stop previous one first
+        currentMacro = macro;
+        macro.start();
+    }
+
+    // Stop whatever macro is running
+    public static void stopCurrentMacro() {
+        if (currentMacro != null) {
+            currentMacro.stop();
+            currentMacro = null;
+        }
+    }
+
+    // Check if something is running
+    public static boolean isRunning() {
+        return currentMacro != null;
+    }
+
+    // Get name of current macro
+    public static String getCurrentMacroName() {
+        return currentMacro != null ? currentMacro.getName() : "None";
     }
 }

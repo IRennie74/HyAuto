@@ -1,8 +1,19 @@
 package studio.dreamys.macro;
 
-public interface Macro {
-    void start();          // Called once when macro starts
-    void tick();           // Called every client tick
-    boolean isFinished();  // Returns true when the macro is done
-    String getName();      // Returns macro name (for logging/GUI)
+public abstract class Macro {
+
+    // Called when the macro is first started
+    public abstract void start();
+
+    // Called every game tick
+    public abstract void tick();
+
+    // Called when the macro is stopped
+    public abstract void stop();
+
+    // Returns whether the macro is finished
+    public abstract boolean isFinished();
+
+    // Optional: Name for displaying in GUI
+    public abstract String getName();
 }

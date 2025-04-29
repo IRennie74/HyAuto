@@ -1,23 +1,25 @@
 package studio.dreamys.macro;
 
-public class AnotherExampleMacro implements Macro {
+public class AnotherExampleMacro extends Macro {
     private boolean done = false;
     private int ticksPassed = 0;
 
     @Override
     public void start() {
         System.out.println("[HyAuto] AnotherExampleMacro starting...");
-        // Setup anything needed
     }
 
     @Override
     public void tick() {
-        // Simple tick-based macro
         ticksPassed++;
-
-        if (ticksPassed > 40) { // Example: 2 seconds at 20 TPS
+        if (ticksPassed > 40) {
             done = true;
         }
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("[HyAuto] AnotherExampleMacro stopped.");
     }
 
     @Override

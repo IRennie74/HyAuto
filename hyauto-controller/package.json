@@ -4,14 +4,22 @@
   "description": "Controller server for HyAuto multi-account macro management",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "Rennie44",
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "discord.js": "^14.19.2",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

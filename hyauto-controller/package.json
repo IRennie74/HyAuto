@@ -1,0 +1,15 @@
+{
+  "name": "hyauto-controller",
+  "version": "1.0.0",
+  "description": "Controller server for HyAuto multi-account macro management",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Rennie44",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.13.0"
+  }
+}

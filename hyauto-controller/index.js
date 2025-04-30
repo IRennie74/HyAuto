@@ -1,38 +1,16 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-
+const express = require('express');
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
-app.use(bodyParser.json());
+// ✅ Middleware to parse JSON
+app.use(express.json());
 
-// In-memory status storage
-const clients = {};
-
-// Endpoint to receive metrics from Minecraft clients
-app.post("/api/update", (req, res) => {
-    const { uuid, status, tps, ram, macro } = req.body;
-
-    if (!uuid) return res.status(400).send("Missing UUID");
-
-    clients[uuid] = {
-        status,
-        tps,
-        ram,
-        macro,
-        lastUpdate: Date.now()
-    };
-
-    res.send("OK");
-});
-
-// Endpoint to retrieve all client statuses
-app.get("/api/status", (req, res) => {
-    res.json(clients);
+app.post('/api/update', (req, res) => {
+  const { uuid, status, tps, ram, macro } = req.body;
+  console.log(`[${uuid}] Status: ${status}, TPS: ${tps}, RAM: ${ram}, Macro: ${macro}`);
+  res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server listening on http://localhost:${PORT}`);
 });

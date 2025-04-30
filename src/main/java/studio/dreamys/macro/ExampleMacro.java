@@ -7,12 +7,14 @@ public class ExampleMacro extends Macro {
     @Override
     public void start() {
         System.out.println("[HyAuto] ExampleMacro starting...");
+        done = false;
+        ticksPassed = 0;
     }
 
     @Override
     public void tick() {
         ticksPassed++;
-        if (ticksPassed > 20) {
+        if (ticksPassed > 400) {
             done = true;
         }
     }

@@ -7,6 +7,8 @@ public class AnotherExampleMacro extends Macro {
     @Override
     public void start() {
         System.out.println("[HyAuto] AnotherExampleMacro starting...");
+        done = false;
+        ticksPassed = 0;
     }
 
     @Override

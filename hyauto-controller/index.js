@@ -1,28 +1,38 @@
-const WebSocket = require('ws');
-const { handleMessage } = require('./messages');
-const { registerClient, removeClient } = require('./clientRegistry');
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const app = express();
+const PORT = 3000;
 
-wss.on('connection', function connection(ws, req) {
-  const ip = req.socket.remoteAddress;
-  console.log(`[CONNECT] ${ip}`);
+app.use(cors());
+app.use(bodyParser.json());
 
-  registerClient(ws);
+// In-memory status storage
+const clients = {};
 
-  ws.on('message', function incoming(message) {
-    try {
-      const data = JSON.parse(message);
-      handleMessage(ws, data);
-    } catch (e) {
-      console.error(`[ERROR] Invalid JSON from ${ip}:`, message);
-    }
-  });
+// Endpoint to receive metrics from Minecraft clients
+app.post("/api/update", (req, res) => {
+    const { uuid, status, tps, ram, macro } = req.body;
 
-  ws.on('close', () => {
-    console.log(`[DISCONNECT] ${ip}`);
-    removeClient(ws);
-  });
+    if (!uuid) return res.status(400).send("Missing UUID");
+
+    clients[uuid] = {
+        status,
+        tps,
+        ram,
+        macro,
+        lastUpdate: Date.now()
+    };
+
+    res.send("OK");
 });
 
-console.log("[HyAuto Server] Listening on ws://localhost:8080");
+// Endpoint to retrieve all client statuses
+app.get("/api/status", (req, res) => {
+    res.json(clients);
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});

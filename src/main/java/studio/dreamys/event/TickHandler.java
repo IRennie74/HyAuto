@@ -25,13 +25,15 @@ public class TickHandler {
         if (tickCounter >= 100) { // every 5 seconds (assuming 20 TPS)
             tickCounter = 0;
 
-            String uuid = net.minecraft.client.Minecraft.getMinecraft().getSession().getPlayerID();
+            //Getting data to send to server
+            String uuid = Minecraft.getMinecraft().getSession().getPlayerID(); // this returns the UUID
+            String username = Minecraft.getMinecraft().getSession().getUsername(); // this returns the username
             String status = MacroManager.isRunning() ? "Running" : "Idle";
             String macro = MacroManager.getCurrentMacroName();
             long ram = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             double tps = 20.0; // optionally replace with real TPS tracking
 
-            StatusReporter.sendStatusUpdate(uuid, status, tps, ram, macro);
+            StatusReporter.sendStatusUpdate(uuid, username, status, tps, ram, macro);
         }
     }
 }

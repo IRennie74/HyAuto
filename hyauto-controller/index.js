@@ -1,84 +1,196 @@
-// Load environment variables from .env
 require('dotenv').config();
+const { Client, GatewayIntentBits, Events, EmbedBuilder, Collection } = require('discord.js');
+const { REST, Routes } = require('discord.js');
+const express = require('express');
+const cors = require('cors');
+const { exec } = require('child_process');
 
-// 🧠 Discord Bot Setup
-const { Client, GatewayIntentBits, Events } = require('discord.js');
+const app = express();
+const PORT = 3000;
+
+const STUCK_TIMEOUT_MS = 20_000;
+
+// UUID to script path mapping
+const restartScripts = {
+  "e80c4ae4670b43da8242d2546a60faba": "scripts/restart-Worker1.bat", // wai1
+  "c1a9b894d67f4d3eb86ee951c993cd56": "scripts/restart-Worker2.bat", // Lkws
+};
+
+const clientStatus = {};
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-// 📡 Express + Web Server Setup
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const PORT = 3000;
+// Register slash commands
+const commands = [
+  {
+    name: 'status',
+    description: 'Get the status of all HyAuto clients'
+  },
+  {
+    name: 'restart',
+    description: 'Restart a client instance by UUID',
+    options: [
+      {
+        name: 'uuid',
+        type: 3, // STRING
+        description: 'UUID of the bot to restart',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'commands',
+    description: 'List all available bot commands'
+  }
+];
 
-// In-memory data for client status updates
-const clientStatus = {};
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
+  .then(() => console.log('✅ Slash commands registered'))
+  .catch(console.error);
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Endpoint: POST /api/update (from Minecraft clients)
+// POST endpoint for Minecraft clients
 app.post('/api/update', (req, res) => {
-  const { uuid, status, tps, ram, macro } = req.body;
+  const { uuid, username, status, tps, ram, macro } = req.body;
 
-  if (!uuid) {
-    return res.status(400).send('Missing UUID');
-  }
+  if (!uuid || !username) return res.status(400).send("Missing uuid or username");
 
   clientStatus[uuid] = {
+    username,
     status,
     tps,
     ram,
     macro,
-    lastUpdated: new Date()
+    lastUpdated: Date.now(),
+    stuck: false
   };
-
-  // Send to Discord
-  const channelId = process.env.DISCORD_CHANNEL_ID;
-  if (channelId) {
-    const message = `🟢 **[${uuid}]**
-- **Status:** ${status}
-- **Macro:** ${macro}
-- **TPS:** ${tps}
-- **RAM:** ${Math.round(ram / 1024 / 1024)} MB`;
-
-    client.channels.fetch(channelId).then(channel => {
-      if (channel && channel.isTextBased()) {
-        channel.send(message);
-      }
-    }).catch(console.error);
-  }
 
   res.sendStatus(200);
 });
 
-// Optional GET endpoint for checking current status
 app.get('/api/status', (req, res) => {
   res.json(clientStatus);
 });
 
-// 🎮 Discord Bot Events
+// Bot startup
 client.once(Events.ClientReady, () => {
   console.log(`🤖 Bot ready as ${client.user.tag}`);
+  app.listen(PORT, () => console.log(`🌐 Web server running at http://localhost:${PORT}`));
+
+  // Stuck bot check
+  setInterval(() => {
+    const now = Date.now();
+    for (const [uuid, data] of Object.entries(clientStatus)) {
+      const inactive = now - data.lastUpdated > STUCK_TIMEOUT_MS;
+      if (inactive && !data.stuck) {
+        data.stuck = true;
+        alertStuck(uuid, data);
+      } else if (!inactive && data.stuck) {
+        data.stuck = false;
+      }
+    }
+  }, 10_000);
 });
 
-// Respond to "!status" in chat
-client.on(Events.MessageCreate, (message) => {
-  if (message.content === '!status') {
-    const response = Object.entries(clientStatus).map(([uuid, info]) => {
-      return `**${uuid}**: ${info.status} | ${info.macro} | TPS: ${info.tps} | RAM: ${Math.round(info.ram / 1024 / 1024)} MB`;
-    }).join('\n');
+// Handle slash commands
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return;
 
-    message.channel.send(response || "No accounts are reporting yet.");
+  const { commandName } = interaction;
+
+  if (commandName === 'status') {
+    const embed = new EmbedBuilder()
+      .setTitle("📊 HyAuto Client Status")
+      .setColor(0x3498db)
+      .setTimestamp();
+
+    for (const [uuid, data] of Object.entries(clientStatus)) {
+      const color = data.stuck
+        ? 0xFF0000
+        : data.status === "Running"
+          ? 0x00FF00
+          : 0xFFFF00;
+
+      embed.addFields({
+        name: `${data.username} (${uuid})`,
+        value: `**Status:** ${data.status}${data.stuck ? " ❌" : ""}\n**Macro:** ${data.macro}\n**TPS:** ${data.tps}\n**RAM:** ${Math.round(data.ram / 1024 / 1024)} MB`,
+        inline: false
+      }).setColor(color);
+    }
+
+    await interaction.reply({ embeds: [embed] });
+  }
+
+  if (commandName === 'restart') {
+    const uuid = interaction.options.getString('uuid');
+    const success = restartBot(uuid);
+
+    await interaction.reply(success
+      ? `♻️ Restarting \`${uuid}\`...`
+      : `❌ Could not restart \`${uuid}\`. No script found.`);
+  }
+
+  if (commandName === 'commands') {
+    const embed = new EmbedBuilder()
+      .setTitle('📘 HyAutoBot Slash Commands')
+      .setColor(0x00BFFF)
+      .setDescription('Here are the slash commands you can use:')
+      .addFields(
+        { name: '/status', value: 'Show all client statuses' },
+        { name: '/restart <uuid>', value: 'Restart a bot instance by UUID' },
+        { name: '/commands', value: 'Display this help message' }
+      )
+      .setTimestamp();
+
+    await interaction.reply({ embeds: [embed] });
   }
 });
 
-// Start everything
-client.login(process.env.DISCORD_TOKEN).then(() => {
-  app.listen(PORT, () => {
-    console.log(`🌐 Web server running at http://localhost:${PORT}`);
+// Alert when stuck
+function alertStuck(uuid, data) {
+  const embed = new EmbedBuilder()
+    .setTitle("🔴 Bot Stuck Detected")
+    .setColor(0xFF0000)
+    .addFields(
+      { name: "UUID", value: uuid, inline: true },
+      { name: "Username", value: data.username, inline: true },
+      { name: "Last Status", value: data.status, inline: true },
+      { name: "Macro", value: data.macro, inline: true }
+    )
+    .setTimestamp();
+
+  const channelId = process.env.DISCORD_CHANNEL_ID;
+  client.channels.fetch(channelId).then(channel => {
+    if (channel && channel.isTextBased()) {
+      channel.send({ embeds: [embed] });
+    }
   });
-});
+
+  restartBot(uuid);
+}
+
+// Restart function
+function restartBot(uuid) {
+  const script = restartScripts[uuid];
+  if (!script) {
+    console.log(`[Restart] No script found for ${uuid}`);
+    return false;
+  }
+
+  exec(`"${script}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[Restart] Error restarting ${uuid}:`, error.message);
+    } else {
+      console.log(`[Restart] ${uuid} restarted.`);
+    }
+  });
+
+  return true;
+}
+
+client.login(process.env.DISCORD_TOKEN);

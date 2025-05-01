@@ -5,7 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class StatusReporter {
-    public static void sendStatusUpdate(String uuid, String status, double tps, long ram, String macro) {
+    public static void sendStatusUpdate(String uuid, String username, String status, double tps, long ram, String macro) {
         try {
             URL url = new URL("http://localhost:3000/api/update");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -14,8 +14,8 @@ public class StatusReporter {
             connection.setDoOutput(true);
 
             String json = String.format(
-                    "{\"uuid\":\"%s\",\"status\":\"%s\",\"tps\":%.2f,\"ram\":%d,\"macro\":\"%s\"}",
-                    uuid, status, tps, ram, macro
+                    "{\"uuid\":\"%s\",\"username\":\"%s\",\"status\":\"%s\",\"tps\":%.2f,\"ram\":%d,\"macro\":\"%s\"}",
+                    uuid, username, status, tps, ram, macro
             );
 
             OutputStream os = connection.getOutputStream();
@@ -23,7 +23,7 @@ public class StatusReporter {
             os.flush();
             os.close();
 
-            connection.getResponseCode(); // Forces the request to go through
+            connection.getResponseCode(); // Ensures the request is made
             connection.disconnect();
         } catch (Exception e) {
             System.err.println("[HyAuto] Failed to send status update: " + e.getMessage());

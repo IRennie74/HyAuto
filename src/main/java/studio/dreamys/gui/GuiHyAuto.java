@@ -7,6 +7,7 @@ import studio.dreamys.macro.MacroManager;
 import studio.dreamys.macro.MacroQueueManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GuiHyAuto extends GuiScreen {
@@ -14,57 +15,54 @@ public class GuiHyAuto extends GuiScreen {
     private GuiButton startButton;
     private GuiButton stopButton;
     private GuiButton safetyToggle;
-    private GuiButton nextMacroButton;
-    private GuiButton prevMacroButton;
+    private GuiButton nextQueueButton;
+    private GuiButton prevQueueButton;
 
-    private List<Macro> macros;
-    private int currentIndex = 0;
+    private List<String> queueNames;
+    private int currentQueueIndex = 0;
     private boolean safetyEnabled = true;
 
     @Override
     public void initGui() {
-        macros = MacroManager.getAvailableMacros();
+        queueNames = new ArrayList<>(MacroQueueManager.getAvailableQueues());
 
         this.buttonList.clear();
 
-        startButton = new GuiButton(0, width / 2 - 60, height / 2 - 20, 120, 20, "Start");
-        stopButton = new GuiButton(4, width / 2 - 60, height / 2 + 10, 120, 20, "Stop"); // New button
+        startButton = new GuiButton(0, width / 2 - 60, height / 2 - 20, 120, 20, "Start Queue");
+        stopButton = new GuiButton(4, width / 2 - 60, height / 2 + 10, 120, 20, "Stop");
         safetyToggle = new GuiButton(1, width / 2 - 60, height / 2 + 40, 120, 20, "Safety: ON");
-        prevMacroButton = new GuiButton(2, width / 2 - 90, height / 2 - 60, 20, 20, "<");
-        nextMacroButton = new GuiButton(3, width / 2 + 70, height / 2 - 60, 20, 20, ">");
+        prevQueueButton = new GuiButton(2, width / 2 - 90, height / 2 - 60, 20, 20, "<");
+        nextQueueButton = new GuiButton(3, width / 2 + 70, height / 2 - 60, 20, 20, ">");
 
-        this.buttonList.add(prevMacroButton);
-        this.buttonList.add(nextMacroButton);
+        this.buttonList.add(prevQueueButton);
+        this.buttonList.add(nextQueueButton);
         this.buttonList.add(startButton);
-        this.buttonList.add(stopButton); // Add stop button
+        this.buttonList.add(stopButton);
         this.buttonList.add(safetyToggle);
     }
-
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
-            case 0: // Start full macro sequence
-                MacroQueueManager.stopAll(); // optional clean start
-                MacroQueueManager.enable();
-                MacroQueueManager.initializeQueue();
+            case 0: // Start selected queue
+                MacroQueueManager.startQueue(queueNames.get(currentQueueIndex));
                 break;
 
             case 4: // Stop
                 MacroQueueManager.stopAll();
                 break;
 
-            case 1: // Safety toggle
+            case 1: // Toggle safety
                 safetyEnabled = !safetyEnabled;
                 safetyToggle.displayString = "Safety: " + (safetyEnabled ? "ON" : "OFF");
                 break;
 
-            case 2: // Next macro
-                currentIndex = (currentIndex + 1) % macros.size();
+            case 2: // Prev queue
+                currentQueueIndex = (currentQueueIndex - 1 + queueNames.size()) % queueNames.size();
                 break;
 
-            case 3: // Previous macro
-                currentIndex = (currentIndex - 1 + macros.size()) % macros.size();
+            case 3: // Next queue
+                currentQueueIndex = (currentQueueIndex + 1) % queueNames.size();
                 break;
         }
     }
@@ -73,11 +71,9 @@ public class GuiHyAuto extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
 
-        // Main box
         drawCenteredString(this.fontRendererObj, "HyAuto Control Panel", width / 2, height / 2 - 80, 0xFFFFFF);
-        drawCenteredString(this.fontRendererObj, "Selected: " + macros.get(currentIndex).getName(), width / 2, height / 2 - 40, 0xAACCFF);
-        String status = MacroQueueManager.isEnabled() ? MacroQueueManager.getCurrentMacroName() : "Stopped";
-        drawCenteredString(this.fontRendererObj, "Currently Running: " + status, width / 2, height / 2 + 40, 0xFFDD55);
+        drawCenteredString(this.fontRendererObj, "Queue: " + queueNames.get(currentQueueIndex), width / 2, height / 2 - 40, 0xAACCFF);
+        drawCenteredString(this.fontRendererObj, "Running: " + MacroQueueManager.getCurrentQueueName(), width / 2, height / 2 + 60, 0xFFDD55);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

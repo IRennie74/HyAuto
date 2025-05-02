@@ -1,26 +1,54 @@
 package studio.dreamys.macro;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class MacroQueueManager {
+    private static final Map<String, List<Macro>> predefinedQueues = new LinkedHashMap<>();
     private static Queue<Macro> macroQueue = new LinkedList<>();
     private static Macro currentMacro;
-    private static boolean enabled = true; // Add this flag
+    private static String currentQueueName = "None";
+    private static boolean enabled = true;
 
-    // Call this once at startup or when restarting
-    public static void initializeQueue() {
+    static {
+        setupQueues();
+    }
+
+    public static void setupQueues() {
+        predefinedQueues.clear();
+
+        predefinedQueues.put("Transition", Arrays.asList(
+                new LoginTransitionMacro()
+        ));
+
+        predefinedQueues.put("Mining", Arrays.asList(
+                new ExampleMacro(),
+                new AnotherExampleMacro()
+        ));
+
+//        predefinedQueues.put("Combat", Arrays.asList(
+//                new CombatMacro()
+//        ));
+    }
+
+    public static void startQueue(String name) {
+        stopAll();
+        List<Macro> queue = predefinedQueues.get(name);
+        if (queue == null || queue.isEmpty()) {
+            System.out.println("[HyAuto] Queue not found: " + name);
+            return;
+        }
+
         macroQueue.clear();
-
-        macroQueue.add(new LoginTransitionMacro());
-        macroQueue.add(new ExampleMacro());
-        macroQueue.add(new AnotherExampleMacro());
-
+        macroQueue.addAll(queue);
         currentMacro = null;
+        currentQueueName = name;
+        enabled = true;
+
+        System.out.println("[HyAuto] Started queue: " + name);
     }
 
     public static void tick() {
-        if (!enabled) return; // Ignore tick if disabled
+        if (!enabled) return;
 
         if (currentMacro == null && !macroQueue.isEmpty()) {
             currentMacro = macroQueue.poll();
@@ -37,37 +65,37 @@ public class MacroQueueManager {
             }
         }
 
-        // Loop back to the beginning if queue is done
         if (currentMacro == null && macroQueue.isEmpty()) {
-            System.out.println("[HyAuto] Restarting macro queue.");
-            initializeQueue();
+            System.out.println("[HyAuto] Queue complete. Restarting: " + currentQueueName);
+            startQueue(currentQueueName); // loop current queue
         }
-    }
-
-    public static String getCurrentMacroName() {
-        return currentMacro != null ? currentMacro.getName() : "None";
     }
 
     public static boolean isRunning() {
         return enabled && currentMacro != null;
     }
 
+    public static String getCurrentMacroName() {
+        return currentMacro != null ? currentMacro.getName() : "None";
+    }
+
+    public static String getCurrentQueueName() {
+        return enabled ? currentQueueName : "Stopped";
+    }
+
     public static void stopAll() {
         if (currentMacro != null) currentMacro.stop();
-        currentMacro = null;
         macroQueue.clear();
-        enabled = false;
-    }
-
-    public static void enable() {
-        enabled = true;
-    }
-
-    public static void disable() {
+        currentMacro = null;
+        currentQueueName = "None";
         enabled = false;
     }
 
     public static boolean isEnabled() {
         return enabled;
+    }
+
+    public static Set<String> getAvailableQueues() {
+        return predefinedQueues.keySet();
     }
 }

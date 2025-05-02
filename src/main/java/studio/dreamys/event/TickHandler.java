@@ -14,46 +14,45 @@ public class TickHandler {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        //Checks to see if player is in game
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null || mc.theWorld == null) return;
-
         if (event.phase != TickEvent.Phase.END) return;
 
+        // Open GUI
         if (Keyboard.isKeyDown(Keyboard.KEY_G)) {
-            Minecraft.getMinecraft().displayGuiScreen(new GuiHyAuto());
+            mc.displayGuiScreen(new GuiHyAuto());
         }
 
-        MacroQueueManager.tick();
-
-        // Handle delayed startup
+        // Delayed start after connect
         if (ConnectionHandler.queueShouldStart) {
             queueStartupDelay++;
             if (queueStartupDelay >= 40) {
-                System.out.println("[HyAuto] Starting macro queue after safe delay.");
-                MacroQueueManager.initializeQueue();
+                System.out.println("[HyAuto] Delayed start: launching default queue.");
+                // Replace "Transition" with whichever queue you want as the default on connect
+                MacroQueueManager.startQueue("Transition");
                 ConnectionHandler.queueShouldStart = false;
                 queueStartupDelay = 0;
             }
         }
 
-        // Status reporting
+        // Tick whatever queue is running
+        MacroQueueManager.tick();
+
+        // Status report every 5s
         tickCounter++;
         if (tickCounter >= 100) {
             tickCounter = 0;
+            final String uuid = mc.getSession().getPlayerID();
+            final String username = mc.getSession().getUsername();
+            final String queue = MacroQueueManager.getCurrentQueueName();
+            final String macro = MacroQueueManager.getCurrentMacroName();
+            final String status = MacroQueueManager.isRunning() ? "Running" : "Idle";
+            final long ram     = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            final double tps   = 20.0;
 
-            String uuid = Minecraft.getMinecraft().getSession().getPlayerID();
-            String username = Minecraft.getMinecraft().getSession().getUsername();
-            String status = MacroQueueManager.isRunning() ? "Running" : "Idle";
-            String macro = MacroQueueManager.getCurrentMacroName();
-            long ram = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            double tps = 20.0;
-
-            //causes game to lag if not on new thread
             new Thread(() -> {
                 StatusReporter.sendStatusUpdate(uuid, username, status, tps, ram, macro);
             }).start();
-
         }
     }
 }

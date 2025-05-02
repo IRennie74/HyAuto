@@ -1,23 +1,20 @@
 @echo off
-:: Replace with your exact MultiMC instance name (case-sensitive!)
-set INSTANCE_NAME="Worker1"
+set INSTANCE_NAME=Worker1
+set MMC_PATH=C:\Users\renni\Downloads\mmc-develop-win32\MultiMC
 
-echo Attempting to restart %INSTANCE_NAME%...
+echo 🔄 Restarting %INSTANCE_NAME%...
 
-:: 1. Try to close gracefully first
-taskkill /F /FI "WINDOWTITLE eq Minecraft*%INSTANCE_NAME%*" /IM javaw.exe >nul 2>&1
+:: Gracefully close Minecraft instance tied to this MultiMC window
+taskkill /F /FI "WINDOWTITLE eq MultiMC: %INSTANCE_NAME%*" /IM javaw.exe >nul 2>&1
 timeout /T 2 >nul
 
-:: 2. Force kill if still running
-taskkill /F /IM javaw.exe >nul 2>&1
+:: Also ensure MultiMC is fresh
 taskkill /F /IM MultiMC.exe >nul 2>&1
 timeout /T 1 >nul
 
-:: 3. ALWAYS attempt to relaunch (even if kill failed)
-cd /D "C:\Users\renni\Downloads\mmc-develop-win32\MultiMC\"
-start "" MultiMC.exe -l %INSTANCE_NAME%
+:: Relaunch MultiMC instance
+cd /D "%MMC_PATH%"
+start "" MultiMC.exe --launch "%INSTANCE_NAME%"
 
-:: 4. Simple success message (will show even if Java was already closed)
-echo Restart attempted for %INSTANCE_NAME%
-echo Check MultiMC for the instance window
+echo ✅ Restart attempted for %INSTANCE_NAME%
 pause

@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import studio.dreamys.macro.Macro;
 import studio.dreamys.macro.MacroManager;
+import studio.dreamys.macro.MacroQueueManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,21 +40,21 @@ public class GuiHyAuto extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
-            case 0: // Start
-                MacroManager.startMacro(macros.get(currentIndex));
+            case 0: // Start full macro sequence
+                MacroQueueManager.stopAll(); // optional: clean start
+                MacroQueueManager.initializeQueue();
                 break;
 
-            case 1: // Toggle safety
-                safetyEnabled = !safetyEnabled;
-                button.displayString = "Safety: " + (safetyEnabled ? "ON" : "OFF");
+            case 1: // Stop
+                MacroQueueManager.stopAll();
                 break;
 
-            case 2: // Prev macro
-                if (currentIndex > 0) currentIndex--;
+            case 2: // Next macro (if you want manual override)
+                currentIndex = (currentIndex + 1) % macros.size();
                 break;
 
-            case 3: // Next macro
-                if (currentIndex < macros.size() - 1) currentIndex++;
+            case 3: // Previous macro
+                currentIndex = (currentIndex - 1 + macros.size()) % macros.size();
                 break;
         }
     }
@@ -65,7 +66,7 @@ public class GuiHyAuto extends GuiScreen {
         // Main box
         drawCenteredString(this.fontRendererObj, "HyAuto Control Panel", width / 2, height / 2 - 80, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, "Selected: " + macros.get(currentIndex).getName(), width / 2, height / 2 - 40, 0xAACCFF);
-        drawCenteredString(this.fontRendererObj, "Currently Running: " + MacroManager.getCurrentMacroName(), width / 2, height / 2 + 40, 0xFFDD55);
+        drawCenteredString(this.fontRendererObj, "Currently Running: " + MacroQueueManager.getCurrentMacroName(), width / 2, height / 2 + 40, 0xFFDD55);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

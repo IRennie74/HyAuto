@@ -5,6 +5,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import studio.dreamys.config.ConfigManager;
+import studio.dreamys.event.ConnectionHandler;
 import studio.dreamys.event.TickHandler;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -32,6 +33,8 @@ public class HyAutoMod {
 
         // Register tick event listener
         MinecraftForge.EVENT_BUS.register(new TickHandler());
+        MinecraftForge.EVENT_BUS.register(new ConnectionHandler());
+
 
         // No need to register macros manually anymore!
         // Macros are listed inside MacroManager.getAvailableMacros()

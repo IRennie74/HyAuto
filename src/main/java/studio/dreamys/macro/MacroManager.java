@@ -20,6 +20,7 @@ public class MacroManager {
     // Returns all available macros (you can add more)
     public static List<Macro> getAvailableMacros() {
         return Arrays.asList(
+                new LoginTransitionMacro(),
                 new ExampleMacro(),
                 new AnotherExampleMacro()
         );

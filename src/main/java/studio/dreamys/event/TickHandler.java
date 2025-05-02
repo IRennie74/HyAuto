@@ -49,7 +49,7 @@ public class TickHandler {
             long ram = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             double tps = 20.0;
 
-            //causes game to lag if not
+            //causes game to lag if not on new thread
             new Thread(() -> {
                 StatusReporter.sendStatusUpdate(uuid, username, status, tps, ram, macro);
             }).start();

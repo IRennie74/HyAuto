@@ -12,6 +12,7 @@ import java.util.List;
 public class GuiHyAuto extends GuiScreen {
 
     private GuiButton startButton;
+    private GuiButton stopButton;
     private GuiButton safetyToggle;
     private GuiButton nextMacroButton;
     private GuiButton prevMacroButton;
@@ -27,29 +28,38 @@ public class GuiHyAuto extends GuiScreen {
         this.buttonList.clear();
 
         startButton = new GuiButton(0, width / 2 - 60, height / 2 - 20, 120, 20, "Start");
-        safetyToggle = new GuiButton(1, width / 2 - 60, height / 2 + 10, 120, 20, "Safety: ON");
+        stopButton = new GuiButton(4, width / 2 - 60, height / 2 + 10, 120, 20, "Stop"); // New button
+        safetyToggle = new GuiButton(1, width / 2 - 60, height / 2 + 40, 120, 20, "Safety: ON");
         prevMacroButton = new GuiButton(2, width / 2 - 90, height / 2 - 60, 20, 20, "<");
         nextMacroButton = new GuiButton(3, width / 2 + 70, height / 2 - 60, 20, 20, ">");
 
         this.buttonList.add(prevMacroButton);
         this.buttonList.add(nextMacroButton);
         this.buttonList.add(startButton);
+        this.buttonList.add(stopButton); // Add stop button
         this.buttonList.add(safetyToggle);
     }
+
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
             case 0: // Start full macro sequence
-                MacroQueueManager.stopAll(); // optional: clean start
+                MacroQueueManager.stopAll(); // optional clean start
+                MacroQueueManager.enable();
                 MacroQueueManager.initializeQueue();
                 break;
 
-            case 1: // Stop
+            case 4: // Stop
                 MacroQueueManager.stopAll();
                 break;
 
-            case 2: // Next macro (if you want manual override)
+            case 1: // Safety toggle
+                safetyEnabled = !safetyEnabled;
+                safetyToggle.displayString = "Safety: " + (safetyEnabled ? "ON" : "OFF");
+                break;
+
+            case 2: // Next macro
                 currentIndex = (currentIndex + 1) % macros.size();
                 break;
 
@@ -66,7 +76,8 @@ public class GuiHyAuto extends GuiScreen {
         // Main box
         drawCenteredString(this.fontRendererObj, "HyAuto Control Panel", width / 2, height / 2 - 80, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, "Selected: " + macros.get(currentIndex).getName(), width / 2, height / 2 - 40, 0xAACCFF);
-        drawCenteredString(this.fontRendererObj, "Currently Running: " + MacroQueueManager.getCurrentMacroName(), width / 2, height / 2 + 40, 0xFFDD55);
+        String status = MacroQueueManager.isEnabled() ? MacroQueueManager.getCurrentMacroName() : "Stopped";
+        drawCenteredString(this.fontRendererObj, "Currently Running: " + status, width / 2, height / 2 + 40, 0xFFDD55);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

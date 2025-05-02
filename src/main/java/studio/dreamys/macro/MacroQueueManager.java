@@ -6,6 +6,7 @@ import java.util.Queue;
 public class MacroQueueManager {
     private static Queue<Macro> macroQueue = new LinkedList<>();
     private static Macro currentMacro;
+    private static boolean enabled = true; // Add this flag
 
     // Call this once at startup or when restarting
     public static void initializeQueue() {
@@ -19,6 +20,8 @@ public class MacroQueueManager {
     }
 
     public static void tick() {
+        if (!enabled) return; // Ignore tick if disabled
+
         if (currentMacro == null && !macroQueue.isEmpty()) {
             currentMacro = macroQueue.poll();
             currentMacro.start();
@@ -46,12 +49,25 @@ public class MacroQueueManager {
     }
 
     public static boolean isRunning() {
-        return currentMacro != null;
+        return enabled && currentMacro != null;
     }
 
     public static void stopAll() {
         if (currentMacro != null) currentMacro.stop();
         currentMacro = null;
         macroQueue.clear();
+        enabled = false;
+    }
+
+    public static void enable() {
+        enabled = true;
+    }
+
+    public static void disable() {
+        enabled = false;
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
     }
 }

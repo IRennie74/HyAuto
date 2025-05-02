@@ -1,6 +1,6 @@
 package studio.dreamys.macro;
 
-public class ExampleMacro extends Macro {
+public class ExampleMacro implements Macro {
     private boolean done = false;
     private int ticksPassed = 0;
 
